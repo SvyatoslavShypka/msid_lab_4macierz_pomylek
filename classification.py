@@ -14,7 +14,26 @@ def get_confusion_matrix(
     :return: confusion matrix
     """
     ...
+    # Długości y_true i y_pred mają być jednakowe
+    if len(y_true) != len(y_pred):
+        raise ValueError("Invalid input shapes! Długości y_true i y_pred mają być jednakowe.")
 
+    # Ilość klasów ma byc dodatnia
+    if num_classes <= 0:
+        raise ValueError("Invalid input! Ilość klasów ma byc dodatnia.")
+
+    # Predicted classes mają być w zakresie [0, num_classes)
+    if any(pred < 0 or pred >= num_classes for pred in y_pred):
+        raise ValueError("Invalid prediction classes! Predicted classes mają być w zakresie [0, num_classes).")
+
+    # Wprowadzamy do confusion matrix zera
+    confusion_matrix = [[0] * num_classes for _ in range(num_classes)]
+
+    # Iterujemy po parach y_true/y_pred i uzupełniemy confusion matrix
+    for true, pred in zip(y_true, y_pred):
+        confusion_matrix[true][pred] += 1
+
+    return confusion_matrix
 
 
 def get_quality_factors(
@@ -31,6 +50,22 @@ def get_quality_factors(
     :return: a tuple of TN, FP, FN, TP
     """
     ...
+    # Inicjalizujemy zerami liczniki dla True Negative (TN), False Positive (FP), False Negative (FN), True Positive (TP)
+    TN = FP = FN = TP = 0
+
+    # Iterujemy po parach y_true/y_pred i uzupełniemy confusion matrix ilościami
+    for true, pred in zip(y_true, y_pred):
+        if true == 0 and pred == 0:
+            TN += 1
+        elif true == 0 and pred == 1:
+            FP += 1
+        elif true == 1 and pred == 0:
+            FN += 1
+        elif true == 1 and pred == 1:
+            TP += 1
+
+    return TN, FP, FN, TP
+
 
 def accuracy_score(y_true: List[int], y_pred: List[int]) -> float:
     """
@@ -41,6 +76,18 @@ def accuracy_score(y_true: List[int], y_pred: List[int]) -> float:
     :return: accuracy score
     """
     ...
+    # Inicjalizujemy ilość dla correct predictions
+    correct = 0
+
+    # Iterujemy po parach y_true/y_pred i zliczamy correct predictions
+    for true, pred in zip(y_true, y_pred):
+        if true == pred:
+            correct += 1
+
+    # Obliczamy accuracy jak stosunek predictions do ogólnego predictions
+    accuracy = correct / len(y_true)
+
+    return accuracy
 
 
 def precision_score(y_true: List[int], y_pred: List[int]) -> float:
@@ -52,6 +99,23 @@ def precision_score(y_true: List[int], y_pred: List[int]) -> float:
     :return: precision score
     """
     ...
+    # Inicjalizujemy zerami liczniki dla False Positive (FP) i True Positive (TP)
+    FP = TP = 0
+
+    # Iterujemy po parach y_true/y_pred i zliczamy TP i FP
+    for true, pred in zip(y_true, y_pred):
+        if true == 1 and pred == 1:
+            TP += 1
+        elif true == 0 and pred == 1:
+            FP += 1
+
+    # Obliczamy precizje jak stosunek TP do (TP + FP), oprócz dzielenia na zero
+    if TP + FP == 0:
+        precision = 0.0
+    else:
+        precision = TP / (TP + FP)
+
+    return precision
 
 
 def recall_score(y_true: List[int], y_pred: List[int]) -> float:
@@ -63,6 +127,23 @@ def recall_score(y_true: List[int], y_pred: List[int]) -> float:
     :return: recall score
     """
     ...
+    # Inicjalizujemy zerami liczniki dla true positive (TP) i false negative (FN)
+    TP = FN = 0
+
+    # Iterujemy po parach y_true/y_pred i zliczamy TP i FN
+    for true, pred in zip(y_true, y_pred):
+        if true == 1 and pred == 1:
+            TP += 1
+        elif true == 1 and pred == 0:
+            FN += 1
+
+    # Obliczamy recall jak stosunek TP do (TP + FN), oprócz dzielenia na zero
+    if TP + FN == 0:
+        recall = 0.0
+    else:
+        recall = TP / (TP + FN)
+
+    return recall
 
 
 def f1_score(y_true: List[int], y_pred: List[int]) -> float:
@@ -74,3 +155,14 @@ def f1_score(y_true: List[int], y_pred: List[int]) -> float:
     :return: F1-score
     """
     ...
+    # Obliczamy precision i recall przy wykorzystaniu odpowiednich funkcii
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
+
+    # Obliczamy F1-score jak  średnia harmoniczna precision i recall, oprócz dzielenia na zero
+    if precision + recall == 0:
+        f1 = 0.0
+    else:
+        f1 = 2 * (precision * recall) / (precision + recall)
+
+    return f1

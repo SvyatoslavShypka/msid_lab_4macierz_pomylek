@@ -12,7 +12,6 @@ import numpy as np
 import pytest
 
 
-
 @pytest.mark.parametrize(
     "y_true, y_pred, num_classes, proper_cm",
     [
@@ -102,7 +101,6 @@ def test_cm_incorrect_prediction_classes(y_true, y_pred, num_classes):
 )
 def test_get_quality_factors(y_true, y_pred, quality_factors):
     assert quality_factors == get_quality_factors(y_pred, y_true)
-
 
 
 @pytest.mark.parametrize(
